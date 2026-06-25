@@ -1,6 +1,6 @@
 const PLACEHOLDER_IMAGE = "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg";
 
-const API_BASE = "https://zqvstbtvmdejvlczfizh.supabase.co/functions/v1/soundcloud";
+const API_BASE = "https://nyrvhfehnenscndsjuep.supabase.co/functions/v1/soundcloud";
 
 async function searchResults(keyword) {
     try {
