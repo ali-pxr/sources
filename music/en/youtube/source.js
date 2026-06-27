@@ -1,5 +1,5 @@
 const PLACEHOLDER_IMAGE =
-  "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg";
+  "https://www.youtube.com/s/desktop/f506bd45/img/favicon_144x144.png";
 
 const API_BASE =
   "https://nyrvhfehnenscndsjuep.supabase.co/functions/v1/youtube";
@@ -10,17 +10,19 @@ async function searchResults(keyword) {
       `${API_BASE}?action=search&q=${encodeURIComponent(keyword)}`
     );
 
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
     const json = await response.json();
 
-    const results = (json.videos || []).map(video => ({
-      title: video.title,
-      image:
-        video.thumbnail ||
-        video.thumbnails?.[0]?.url ||
-        PLACEHOLDER_IMAGE,
-      href: video.videoId
+    const results = (json.tracks || []).map(track => ({
+      title: track.title,
+      image: track.cover || PLACEHOLDER_IMAGE,
+      href: track.ytId
     }));
 
+    console.log(JSON.stringify(results));
     return JSON.stringify(results);
   } catch (error) {
     console.error(error);
@@ -31,18 +33,25 @@ async function searchResults(keyword) {
 async function extractDetails(videoId) {
   try {
     const response = await fetch(
-      `${API_BASE}?action=video&id=${encodeURIComponent(videoId)}`
+      `${API_BASE}?action=video&videoId=${encodeURIComponent(videoId)}`
     );
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
 
     const json = await response.json();
 
-    return JSON.stringify([
+    const details = [
       {
-        description: json.description || "",
-        aliases: json.author || json.channel || "",
+        description: json.title || "",
+        aliases: json.artist || "",
         airdate: json.publishDate || "N/A"
       }
-    ]);
+    ];
+
+    console.log(JSON.stringify(details));
+    return JSON.stringify(details);
   } catch (error) {
     console.error(error);
     return JSON.stringify([]);
@@ -64,14 +73,25 @@ async function extractStreamUrl(videoId) {
       `${API_BASE}?action=stream&videoId=${encodeURIComponent(videoId)}`
     );
 
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
     const json = await response.json();
 
-    return JSON.stringify({
+    if (!json.url) {
+      throw new Error("No stream URL returned.");
+    }
+
+    const result = {
       streams: [
         "Audio",
         json.url
       ]
-    });
+    };
+
+    console.log(JSON.stringify(result));
+    return JSON.stringify(result);
   } catch (error) {
     console.error(error);
     return null;
