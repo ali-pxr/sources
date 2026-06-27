@@ -1,0 +1,10 @@
+{
+    "sourceName": "Granime",
+    "author": "50/50",
+    "iconUrl": "https://i0.wp.com/grani.me/wp-content/uploads/2024/12/cropped-GA-192x192.png",
+    "version": "1.0.0",
+    "language": "English (SUB/DUB)",
+    "baseUrl": "https://grani.me/",
+    "searchBaseUrl": "https://grani.me/?s=%s",
+    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/en/granime/source.js"
+}

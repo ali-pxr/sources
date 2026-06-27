@@ -1,0 +1,17 @@
+{
+    "sourceName": "StreamingUnity",
+    "iconUrl": "https://virginiapertutte.it/templates/sub-ita/images/logo.png",
+    "author": {
+        "name": "sobet",
+        "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQPQ1qIiALbM3xDWGsuJzu6ItaQGwb9ICRRw&s"
+    },
+    "version": "1.0.4",
+    "language": "Italian",
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://streamingunity.bio/it",
+    "searchBaseUrl": "https://streamingunity.bio/it/archive?title=%s",
+    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/movies/it/streamingunity/source.js",
+    "asyncJS": true,
+    "type": "shows/movies"
+}
