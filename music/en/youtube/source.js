@@ -1,79 +1,79 @@
-const PLACEHOLDER_IMAGE = "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg";
+const PLACEHOLDER_IMAGE =
+  "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg";
 
-const API_BASE = "https://nyrvhfehnenscndsjuep.supabase.co/functions/v1/soundcloud";
+const API_BASE =
+  "https://nyrvhfehnenscndsjuep.supabase.co/functions/v1/youtube";
 
 async function searchResults(keyword) {
-    try {
-        const response = await fetch(
-            `${API_BASE}?action=search&q=${encodeURIComponent(keyword)}`
-        );
+  try {
+    const response = await fetch(
+      `${API_BASE}?action=search&q=${encodeURIComponent(keyword)}`
+    );
 
-        const json = await response.json();
+    const json = await response.json();
 
-        const results = (json.tracks || []).map(track => ({
-            title: track.title,
-            image: track.cover || PLACEHOLDER_IMAGE,
-            href: String(track.scId)
-        }));
+    const results = (json.videos || []).map(video => ({
+      title: video.title,
+      image:
+        video.thumbnail ||
+        video.thumbnails?.[0]?.url ||
+        PLACEHOLDER_IMAGE,
+      href: video.videoId
+    }));
 
-        console.log(JSON.stringify(results));
-        return JSON.stringify(results);
-    } catch (error) {
-        console.error(error);
-        return JSON.stringify([]);
-    }
+    return JSON.stringify(results);
+  } catch (error) {
+    console.error(error);
+    return JSON.stringify([]);
+  }
 }
 
-async function extractDetails(trackId) {
-    try {
-        const response = await fetch(
-            `${API_BASE}?action=search&q=${encodeURIComponent(trackId)}&limit=1`
-        );
+async function extractDetails(videoId) {
+  try {
+    const response = await fetch(
+      `${API_BASE}?action=video&id=${encodeURIComponent(videoId)}`
+    );
 
-        const json = await response.json();
-        const track = json.tracks?.[0];
+    const json = await response.json();
 
-        const details = [{
-            description: track?.title || "N/A",
-            aliases: track?.artist || "Unknown Artist",
-            airdate: "N/A"
-        }];
-
-        console.log(JSON.stringify(details));
-        return JSON.stringify(details);
-    } catch {
-        return JSON.stringify([]);
-    }
-}
-
-async function extractEpisodes(trackId) {
     return JSON.stringify([
-        {
-            number: 1,
-            href: trackId
-        }
+      {
+        description: json.description || "",
+        aliases: json.author || json.channel || "",
+        airdate: json.publishDate || "N/A"
+      }
     ]);
+  } catch (error) {
+    console.error(error);
+    return JSON.stringify([]);
+  }
 }
 
-async function extractStreamUrl(trackId) {
-    try {
-        const response = await fetch(
-            `${API_BASE}?action=stream&trackId=${trackId}`
-        );
-
-        const json = await response.json();
-
-        const result = {
-            streams: [
-                "Audio",
-                json.url
-            ]
-        };
-
-        console.log(JSON.stringify(result));
-        return JSON.stringify(result);
-    } catch (error) {
-        console.error(error);
-        return null;
+async function extractEpisodes(videoId) {
+  return JSON.stringify([
+    {
+      number: 1,
+      href: videoId
     }
+  ]);
+}
+
+async function extractStreamUrl(videoId) {
+  try {
+    const response = await fetch(
+      `${API_BASE}?action=stream&videoId=${encodeURIComponent(videoId)}`
+    );
+
+    const json = await response.json();
+
+    return JSON.stringify({
+      streams: [
+        "Audio",
+        json.url
+      ]
+    });
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
