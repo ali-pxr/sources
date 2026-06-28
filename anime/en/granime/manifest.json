@@ -6,5 +6,5 @@
     "language": "English (SUB/DUB)",
     "baseUrl": "https://grani.me/",
     "searchBaseUrl": "https://grani.me/?s=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/en/granime/source.js"
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/en/granime/source.js"
 }

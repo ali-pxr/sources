@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "https://111.90.159.132/",
     "searchBaseUrl": "https://111.90.159.132/?s=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/movies/hi/onlinemovieshindi/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/movies/hi/onlinemovieshindi/source.js",
     "asyncJS": true,
     "type": "movies/shows"
 }

@@ -11,7 +11,7 @@
     "quality": "720p",
     "baseUrl": "https://anime-suba.com/",
     "searchBaseUrl": "https://anime-suba.com/?s=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/th/anime-suba/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/th/anime-suba/source.js",
     "asyncJS": true,
     "type": "anime"
 }

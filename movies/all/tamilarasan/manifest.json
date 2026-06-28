@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "https://tamilarasan.com/",
     "searchBaseUrl": "https://tamilarasan.com/?s=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/movies/all/tamilarasan/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/movies/all/tamilarasan/source.js",
     "asyncJS": true,
     "type": "movies/shows"
 }

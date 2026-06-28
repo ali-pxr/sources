@@ -11,7 +11,7 @@
     "quality": "720p",
     "baseUrl": "https://en.wikipedia.org/wiki/List_of_films_in_the_public_domain_in_the_United_States",
     "searchBaseUrl": "https://en.wikipedia.org/wiki/List_of_films_in_the_public_domain_in_the_United_States",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/other/en/wikipedia/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/other/en/wikipedia/source.js",
     "asyncJS": true,
     "streamAsyncJS": false
 }

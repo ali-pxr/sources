@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "https://jungopinoy.com/",
     "searchBaseUrl": "https://jungopinoy.com/%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/movies/fil/jungopinoy/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/movies/fil/jungopinoy/source.js",
     "asyncJS": true,
     "type": "movies/shows",
     "note": "⚠️ Limited catalog, seeing as it's just scraping all data from the homepage and filtering"

@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "https://gojo.live",
     "searchBaseUrl": "https://gojo.live",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/en/gojowtf/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/en/gojowtf/source.js",
     "asyncJS": true,
     "type": "anime",
     "note": ""

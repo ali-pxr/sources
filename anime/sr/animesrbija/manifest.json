@@ -11,6 +11,6 @@
     "quality": "720p",
     "baseUrl": "https://www.animesrbija.com/",
     "searchBaseUrl": "https://www.animesrbija.com/filter?search=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/sr/animesrbija/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/sr/animesrbija/source.js",
     "type": "anime"
 }

@@ -11,7 +11,7 @@
     "quality": "Dev",
     "baseUrl": "https://google.com/",
     "searchBaseUrl": "https://google.com/?q=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/all/dev/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/all/dev/source.js",
     "asyncJS": true,
     "type": "anime"
 }

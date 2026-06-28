@@ -11,7 +11,7 @@
     "quality": "720p",
     "baseUrl": "https://animefenix2.tv/",
     "searchBaseUrl": "https://animefenix2.tv/directorio/anime?q=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/es/animefenix/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/es/animefenix/source.js",
     "steeamAsyncJS": true,
     "type": "anime"
 }

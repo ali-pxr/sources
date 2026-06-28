@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "hhttp://www.iyinghua.com/",
     "searchBaseUrl": "http://www.iyinghua.com/%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/zh/iyinghua/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/zh/iyinghua/source.js",
     "asyncJS": true,
     "type": "anime",
     "note": "SOME STUFF IS REGION LOCKED"

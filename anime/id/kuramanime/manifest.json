@@ -11,7 +11,7 @@
     "quality": "720p",
     "baseUrl": "https://v6.kuramanime.run/",
     "searchBaseUrl": "https://v6.kuramanime.run/anime?search=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/id/kuramanime/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/id/kuramanime/source.js",
     "asyncJS": true,
     "type": "anime",
     "note": "## USE AN EXTERNAL PLAYER (E.G., VLC)"

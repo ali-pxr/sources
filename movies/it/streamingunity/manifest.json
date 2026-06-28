@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "https://streamingunity.bio/it",
     "searchBaseUrl": "https://streamingunity.bio/it/archive?title=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/movies/it/streamingunity/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/movies/it/streamingunity/source.js",
     "asyncJS": true,
     "type": "shows/movies"
 }

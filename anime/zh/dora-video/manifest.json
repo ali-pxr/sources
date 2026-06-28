@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "https://www.dora-video.cn/",
     "searchBaseUrl": "https://www.dora-video.cn/search/%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/zh/dora-video/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/zh/dora-video/source.js",
     "asyncJS": true,
     "type": "anime"
 }

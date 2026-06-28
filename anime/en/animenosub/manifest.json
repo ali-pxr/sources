@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "https://vidmoly.to/",
     "searchBaseUrl": "https://animenosub.to/?s=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/en/animenosub/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/en/animenosub/source.js",
     "asyncJS": true,
     "type": "anime"
 }

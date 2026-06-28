@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "https://ddys.pro/",
     "searchBaseUrl": "https://ddys.pro/?s=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/movies/zh/ddys/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/movies/zh/ddys/source.js",
     "asyncJS": true,
     "type": "movies/shows"
 }

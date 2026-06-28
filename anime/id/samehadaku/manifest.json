@@ -11,5 +11,5 @@
     "quality": "720p",
     "baseUrl": "https://samehadaku.mba/",
     "searchBaseUrl": "https://samehadaku.mba/?s=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/id/samehadaku/source.js"
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/id/samehadaku/source.js"
 }

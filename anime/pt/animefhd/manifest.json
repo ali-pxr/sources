@@ -11,7 +11,7 @@
     "quality": "1080p",
     "baseUrl": "https://animefhd.net/",
     "searchBaseUrl": "https://animefhd.net/?s=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/anime/pt/animefhd/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/anime/pt/animefhd/source.js",
     "streamAsyncJS": true,
     "type": "anime"
 }
