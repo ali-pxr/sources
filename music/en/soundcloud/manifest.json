@@ -11,6 +11,6 @@
     "quality": "Wallah fire quality",
     "baseUrl": "https://soundcloud.com/",
     "searchBaseUrl": "https://soundcloud.com/search?q=%s",
-    "scriptUrl": "https://github.com/ali-pxr/sources/blob/main/music/en/soundcloud/source.js",
+    "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/refs/heads/main/music/en/soundcloud/source.js",
     "asyncJS": true
 }
