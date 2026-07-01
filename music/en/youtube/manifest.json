@@ -5,12 +5,15 @@
     "name": "ali-pxr",
     "icon": "https://github.com/ali-pxr.png"
   },
-  "version": "1.0.0",
+  "version": "2.0.0",
   "language": "en",
-  "streamType": "DASH",
+  "streamType": "HLS",
   "quality": "Adaptive",
   "baseUrl": "https://www.youtube.com/",
   "searchBaseUrl": "https://www.youtube.com/results?search_query=%s",
   "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/main/music/en/youtube/source.js",
-  "asyncJS": true
+  "asyncJS": true,
+   "streamAsyncJS": true,
+  "softsub": true,
+  "type": "videos"
 }
