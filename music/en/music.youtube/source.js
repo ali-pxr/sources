@@ -1,8 +1,8 @@
 // ============================================================
-// YOUTUBE MUSIC ANDROID MODE – SORA EDITION
+// YOUTUBE MUSIC ANDROID MODE – FIXED SEARCH
 // ============================================================
 
-// 1. إعدادات Android Music Headers
+// 1. إعدادات Android Music Headers (كما هي)
 const ANDROID_MUSIC_HEADERS = {
     'User-Agent': 'com.google.android.apps.youtube.music/6.42.52 (Linux; U; Android 13; en-US; Pixel 6 Build/TP1A.220624.014)',
     'Accept': 'application/json',
@@ -17,22 +17,20 @@ const ANDROID_MUSIC_HEADERS = {
     'Connection': 'keep-alive',
 };
 
-// 2. متغيرات InnerTube (ستُستخرج ديناميكياً)
+// 2. متغيرات InnerTube
 let innertubeApiKey = null;
 let innertubeClientVersion = "6.42.52";
 
-// 3. جلب الإعدادات من YouTube Music (بدلاً من YouTube العادي)
+// 3. جلب الإعدادات من YouTube Music
 async function fetchMusicInnertubeConfig() {
     try {
         const response = await fetchv2("https://music.youtube.com", ANDROID_MUSIC_HEADERS);
         const html = await response.text();
         
-        // استخراج API Key من الصفحة
         const apiKeyMatch = html.match(/INNERTUBE_API_KEY":"([^"]+)"/);
         if (apiKeyMatch) innertubeApiKey = apiKeyMatch[1];
         
         if (!innertubeApiKey) {
-            // استخدام مفتاح عام معروف لأندرويد ميوزك
             innertubeApiKey = "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w";
         }
         
@@ -45,7 +43,7 @@ async function fetchMusicInnertubeConfig() {
     }
 }
 
-// 4. دالة الاتصال بـ InnerTube كـ Android Music
+// 4. دالة الاتصال بـ InnerTube
 async function callMusicInnerTube(endpoint, data) {
     if (!innertubeApiKey) await fetchMusicInnertubeConfig();
     
@@ -59,7 +57,10 @@ async function callMusicInnerTube(endpoint, data) {
     return await response.json();
 }
 
-// 5. دالة البحث (خاصة بأندرويد ميوزك)
+// ============================================================
+// 5. دالة البحث المصححة – تعتمد على هيكل F12 الحقيقي
+// ============================================================
+
 async function searchResults(keyword) {
     try {
         await fetchMusicInnertubeConfig();
@@ -77,42 +78,138 @@ async function searchResults(keyword) {
         };
         
         const response = await callMusicInnerTube('search', data);
-        const items = response.contents?.tabbedSearchResultsRenderer?.tabs?.[0]?.tabRenderer?.content?.sectionListRenderer?.contents || [];
+        
+        // ====== التصحيح الجوهري هنا ======
+        // التنقل في الهيكل الصحيح لـ YouTube Music
+        const tabbedSearch = response.contents?.tabbedSearchResultsRenderer;
+        if (!tabbedSearch) {
+            console.log("⚠️ No tabbedSearchResultsRenderer found");
+            return JSON.stringify([{ title: 'No results', image: '', href: '' }]);
+        }
+        
+        // الحصول على أول تبويب (عادة "Songs" أو "All")
+        const firstTab = tabbedSearch.tabs?.[0]?.tabRenderer;
+        if (!firstTab) {
+            console.log("⚠️ No tabs found");
+            return JSON.stringify([{ title: 'No tabs', image: '', href: '' }]);
+        }
+        
+        const sectionList = firstTab.content?.sectionListRenderer;
+        if (!sectionList) {
+            console.log("⚠️ No sectionListRenderer");
+            return JSON.stringify([{ title: 'No section list', image: '', href: '' }]);
+        }
         
         const results = [];
-        for (const section of items) {
-            const itemSection = section.itemSectionRenderer?.contents || [];
-            for (const item of itemSection) {
-                // في ميوزك، غالباً ما يكون النوع "musicResponsiveListItemRenderer"
-                const musicItem = item.musicResponsiveListItemRenderer || item.videoRenderer;
-                if (musicItem) {
-                    const title = musicItem.title?.runs?.[0]?.text || 
-                                 musicItem.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text || 
-                                 'No Title';
-                    const videoId = musicItem.videoId || musicItem.playlistId || '';
-                    const thumb = musicItem.thumbnail?.thumbnails?.[0]?.url || '';
+        
+        // المرور على جميع الأقسام في sectionList
+        for (const section of sectionList.contents || []) {
+            const itemSection = section.itemSectionRenderer;
+            if (!itemSection) continue;
+            
+            for (const content of itemSection.contents || []) {
+                // ====== المفتاح: البحث عن musicShelfRenderer ======
+                const shelf = content.musicShelfRenderer;
+                if (!shelf) continue;
+                
+                // استخراج العناصر من الـ shelf
+                for (const item of shelf.contents || []) {
+                    const musicItem = item.musicResponsiveListItemRenderer;
+                    if (!musicItem) continue;
                     
-                    results.push({
-                        title: title,
-                        image: thumb,
-                        href: `https://music.youtube.com/watch?v=${videoId}`
-                    });
+                    // استخراج العنوان (من أول flexColumn)
+                    const titleColumn = musicItem.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer;
+                    let title = titleColumn?.text?.runs?.[0]?.text || 'Unknown Title';
+                    
+                    // استخراج الفنان (من ثاني flexColumn) – نضيفه للعنوان لتمييز النتائج
+                    const artistColumn = musicItem.flexColumns?.[1]?.musicResponsiveListItemFlexColumnRenderer;
+                    let artist = artistColumn?.text?.runs?.[0]?.text || '';
+                    
+                    if (artist) {
+                        title = `${title} - ${artist}`;
+                    }
+                    
+                    // استخراج الصورة المصغرة
+                    const thumbnail = musicItem.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.[0]?.url || '';
+                    
+                    // استخراج videoId (أساسي)
+                    const videoId = musicItem.videoId || musicItem.playlistId || '';
+                    
+                    // بناء الرابط
+                    let href = '';
+                    if (videoId) {
+                        href = `https://music.youtube.com/watch?v=${videoId}`;
+                    } else {
+                        // إذا لم يكن فيديو، قد يكون فناناً أو ألبوماً – نستخدم browseId
+                        const browseId = musicItem.navigationEndpoint?.browseEndpoint?.browseId || '';
+                        if (browseId) {
+                            href = `https://music.youtube.com/browse/${browseId}`;
+                        }
+                    }
+                    
+                    if (title && href) {
+                        results.push({
+                            title: title,
+                            image: thumbnail || 'https://via.placeholder.com/100',
+                            href: href
+                        });
+                    }
                 }
             }
         }
         
-        return JSON.stringify(results.slice(0, 20));
+        // إذا لم تكن هناك نتائج، نحاول البحث في مكان آخر (بعض الإصدارات تستخدم videoRenderer)
+        if (results.length === 0) {
+            // محاولة بديلة: البحث في كل المحتويات
+            for (const section of sectionList.contents || []) {
+                const itemSection = section.itemSectionRenderer;
+                if (!itemSection) continue;
+                
+                for (const content of itemSection.contents || []) {
+                    const video = content.videoRenderer;
+                    if (video) {
+                        results.push({
+                            title: video.title?.runs?.[0]?.text || 'Unknown',
+                            image: video.thumbnail?.thumbnails?.[0]?.url || '',
+                            href: `https://music.youtube.com/watch?v=${video.videoId}`
+                        });
+                    }
+                }
+            }
+        }
+        
+        console.log(`✅ Found ${results.length} results`);
+        return JSON.stringify(results.slice(0, 25));
+        
     } catch (error) {
         console.log('Search error:', error);
-        return JSON.stringify([{ title: 'Error', image: '', href: '' }]);
+        return JSON.stringify([{ 
+            title: '⚠️ Search Error: ' + error.message, 
+            image: '', 
+            href: 'https://music.youtube.com' 
+        }]);
     }
 }
 
-// 6. استخراج التفاصيل (تنسيق أخف)
+// ============================================================
+// 6. باقي الدوال (بنفس المنطق المصحح)
+// ============================================================
+
 async function extractDetails(url) {
     try {
         const videoId = url.match(/v=([^&]+)/)?.[1];
-        if (!videoId) throw new Error('Invalid URL');
+        if (!videoId) {
+            // محاولة استخراج browseId
+            const browseId = url.match(/browse\/([^/?]+)/)?.[1];
+            if (browseId) {
+                return JSON.stringify([{
+                    description: 'Browse page - use search for details',
+                    aliases: 'YouTube Music',
+                    airdate: 'N/A'
+                }]);
+            }
+            throw new Error('Invalid URL');
+        }
         
         const data = {
             videoId: videoId,
@@ -126,6 +223,7 @@ async function extractDetails(url) {
         
         const response = await callMusicInnerTube('player', data);
         const videoDetails = response.videoDetails || {};
+        const microformat = response.microformat?.microformatDataRenderer || {};
         
         return JSON.stringify([{
             description: videoDetails.shortDescription || 'No description',
@@ -138,10 +236,8 @@ async function extractDetails(url) {
     }
 }
 
-// 7. استخراج الحلقات (قوائم التشغيل الموسيقية)
 async function extractEpisodes(url) {
     try {
-        // للموسيقى، غالباً نستخرج من قائمة تشغيل أو ألبوم
         const playlistId = url.match(/list=([^&]+)/)?.[1];
         if (!playlistId) return JSON.stringify([]);
         
@@ -167,7 +263,7 @@ async function extractEpisodes(url) {
                     const videoId = playlistItem.videoId || '';
                     const title = playlistItem.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text || 'Track';
                     episodes.push({
-                        href: `https://music.youtube.com/watch?v=${videoId}`,
+                        href: videoId ? `https://music.youtube.com/watch?v=${videoId}` : '#',
                         number: title
                     });
                 }
@@ -181,7 +277,6 @@ async function extractEpisodes(url) {
     }
 }
 
-// 8. استخراج رابط الدفق الصوتي (أسهل بكثير في أندرويد)
 async function extractStreamUrl(html) {
     try {
         const videoId = html.match(/watch\?v=([^"&]+)/)?.[1];
@@ -200,37 +295,31 @@ async function extractStreamUrl(html) {
         const response = await callMusicInnerTube('player', data);
         const streamingData = response.streamingData || {};
         
-        // في أندرويد ميوزك، التنسيقات الصوتية غالباً تأتي مباشرة بدون توقيع
-        const formats = [...(streamingData.adaptiveFormats || [])];
+        const formats = [...(streamingData.adaptiveFormats || []), ...(streamingData.formats || [])];
         
-        // اختيار أفضل تنسيق صوتي (AAC عالي الجودة)
+        // اختيار أفضل تنسيق صوتي
         const audioFormat = formats
             .filter(f => f.mimeType && f.mimeType.includes('audio/mp4'))
             .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0))[0];
         
         let streamUrl = audioFormat?.url || null;
         
-        // إذا كان هناك توقيع، نحاول فكه (لكن نادراً ما يحدث في أندرويد)
+        // إذا كان هناك توقيع، نحاول فكه
         if (!streamUrl && audioFormat?.signatureCipher) {
             const params = new URLSearchParams(audioFormat.signatureCipher);
             const baseUrl = params.get('url');
             const sig = params.get('s');
             if (baseUrl && sig) {
-                // خوارزمية بسيطة لأندرويد (غالباً لا تحتاج)
                 streamUrl = `${baseUrl}&sig=${sig}`;
             }
         }
         
-        // لا توجد ترجمات في ميوزك عادة
-        return JSON.stringify({ 
-            stream: streamUrl, 
-            subtitles: null 
-        });
+        return JSON.stringify({ stream: streamUrl, subtitles: null });
     } catch (error) {
         console.log('Stream error:', error);
         return JSON.stringify({ stream: null, subtitles: null });
     }
 }
 
-// 9. تهيئة الإعدادات عند البدء
+// 7. التهيئة
 fetchMusicInnertubeConfig();
