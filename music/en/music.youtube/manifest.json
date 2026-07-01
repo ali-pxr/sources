@@ -1,0 +1,19 @@
+{
+  "sourceName": "YouTube Music (Android Mode)",
+  "iconUrl": "https://www.google.com/s2/favicons?domain=youtube.com&sz=128",
+  "author": {
+    "name": "ali-pxr",
+    "icon": "https://raw.githubusercontent.com/your-repo/author-icon.png"
+  },
+  "version": 3,
+  "language": "Multilingual",
+  "streamType": "HLS",
+  "quality": "160kbps",
+  "baseUrl": "https://music.youtube.com/",
+  "searchBaseUrl": "https://music.youtube.com/search?q=%s",
+  "scriptUrl": "https://raw.githubusercontent.com/your-repo/ytmusic-android.js",
+  "asyncJS": true,
+  "streamAsyncJS": true,
+  "softsub": false,
+  "type": "music"
+}
