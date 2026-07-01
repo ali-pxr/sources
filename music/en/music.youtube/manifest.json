@@ -11,7 +11,7 @@
   "quality": "160kbps",
   "baseUrl": "https://music.youtube.com/",
   "searchBaseUrl": "https://music.youtube.com/search?q=%s",
-  "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/raw/refs/heads/main/music/en/music.youtube/source.json",
+  "scriptUrl": "https://raw.githubusercontent.com/ali-pxr/sources/refs/heads/main/music/en/music.youtube/source.js",
   "asyncJS": true,
   "streamAsyncJS": true,
   "softsub": false,
