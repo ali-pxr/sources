@@ -6,6 +6,9 @@ let innertubeApiKey = null;
 let innertubeClientVersion = null;
 let innertubeClientName = "WEB";
 
+// إعدادات Invidious (سنستخدمها فقط للبث)
+const INVIDIOUS_API = "https://yt.omada.cafe/api/v1/";
+
 async function fetchInnertubeConfig() {
     try {
         const response = await fetchv2("https://www.youtube.com", {
@@ -44,7 +47,7 @@ async function callInnerTube(endpoint, data) {
         'Content-Type': 'application/json',
         'X-YouTube-Client-Name': '1',
         'X-YouTube-Client-Version': innertubeClientVersion,
-        'User-Agent': 'Mozilla/5.0'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
     };
     
     const response = await fetchv2(url, headers, "POST", data);
@@ -52,82 +55,18 @@ async function callInnerTube(endpoint, data) {
 }
 
 // ============================================================
-// الجزء الثالث: فك توقيع الفيديو (Signature Decryption)
+// الجزء الثالث: دوال مساعدة لاستخراج المعرفات
 // ============================================================
 
-/**
- * فك توقيع رابط الفيديو باستخدام خوارزمية مبسطة
- * هذه محاكاة لآلية yt-dlp ولكن تعمل داخل Sora
- */
-function decryptSignature(signatureCipher) {
-    try {
-        // تحليل الـ signatureCipher
-        const params = new URLSearchParams(signatureCipher);
-        const url = params.get('url');
-        const s = params.get('s');
-        const sp = params.get('sp') || 'signature';
-        
-        if (!url || !s) return null;
-        
-        // محاكاة خوارزمية فك التوقيع (هذه نسخة مبسطة)
-        // في الواقع، يوتيوب يستخدم دوال JS معقدة، لكننا سنطبق خوارزمية معروفة
-        let decryptedSig = s;
-        
-        // الخوارزمية الأساسية (مأخوذة من yt-dlp)
-        // 1. عكس السلسلة
-        decryptedSig = decryptedSig.split('').reverse().join('');
-        // 2. إزالة أول حرفين (في بعض الإصدارات)
-        decryptedSig = decryptedSig.slice(2);
-        // 3. إضافة حرف في النهاية (محاكاة)
-        decryptedSig = decryptedSig + 'A';
-        
-        // إعادة بناء الرابط
-        const finalUrl = new URL(url);
-        finalUrl.searchParams.set(sp, decryptedSig);
-        return finalUrl.toString();
-    } catch (e) {
-        console.log('Decryption error:', e);
-        return null;
-    }
+function extractVideoIdFromUrl(url) {
+    // يدعم روابط يوتيوب العادية وروابط Invidious
+    const match = url.match(/(?:v=|\/videos\/|watch\?v=|\/v\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
 }
 
-/**
- * استخراج التنسيقات من playerResponse وفك توقيعها
- */
-async function extractFormatsWithSignature(playerResponse) {
-    const streamingData = playerResponse.streamingData || {};
-    const formats = [];
-    
-    // جمع كل التنسيقات
-    const allFormats = [
-        ...(streamingData.formats || []),
-        ...(streamingData.adaptiveFormats || [])
-    ];
-    
-    for (const fmt of allFormats) {
-        let url = fmt.url;
-        let signatureCipher = fmt.signatureCipher || fmt.cipher;
-        
-        // إذا كان هناك توقيع مشفر، فكه
-        if (signatureCipher && !url) {
-            url = decryptSignature(signatureCipher);
-        }
-        
-        if (url) {
-            formats.push({
-                itag: fmt.itag,
-                quality: fmt.qualityLabel || fmt.quality || 'unknown',
-                mimeType: fmt.mimeType,
-                url: url,
-                hasVideo: fmt.mimeType && fmt.mimeType.includes('video'),
-                hasAudio: fmt.mimeType && fmt.mimeType.includes('audio'),
-                bitrate: fmt.bitrate,
-                fps: fmt.fps
-            });
-        }
-    }
-    
-    return formats;
+function extractVideoIdFromHtml(html) {
+    const match = html.match(/watch\?v=([^"&]+)/);
+    return match ? match[1] : null;
 }
 
 // ============================================================
@@ -148,7 +87,9 @@ async function searchResults(keyword) {
             context: {
                 client: {
                     clientName: innertubeClientName,
-                    clientVersion: innertubeClientVersion
+                    clientVersion: innertubeClientVersion,
+                    hl: "ar",
+                    gl: "SA"
                 }
             }
         };
@@ -165,6 +106,7 @@ async function searchResults(keyword) {
                     results.push({
                         title: video.title?.runs?.[0]?.text || 'No Title',
                         image: video.thumbnail?.thumbnails?.[0]?.url || '',
+                        // نستخدم رابط Invidious كـ "href" مؤقت، لكنه سيستخدم فقط لاستخراج المعرف
                         href: `https://www.youtube.com/watch?v=${video.videoId}`
                     });
                 }
@@ -185,7 +127,7 @@ async function searchResults(keyword) {
  */
 async function extractDetails(url) {
     try {
-        const videoId = url.match(/v=([^&]+)/)?.[1];
+        const videoId = extractVideoIdFromUrl(url);
         if (!videoId) throw new Error('Invalid URL');
         
         const data = {
@@ -193,19 +135,21 @@ async function extractDetails(url) {
             context: {
                 client: {
                     clientName: innertubeClientName,
-                    clientVersion: innertubeClientVersion
+                    clientVersion: innertubeClientVersion,
+                    hl: "ar",
+                    gl: "SA"
                 }
             }
         };
         
         const response = await callInnerTube('player', data);
         const videoDetails = response.videoDetails || {};
-        const microformat = response.microformat?.microformatDataRenderer || {};
+        const microformat = response.microformat?.playerMicroformatRenderer || {};
         
         return JSON.stringify([{
-            description: videoDetails.shortDescription || 'No description',
+            description: videoDetails.shortDescription || microformat.description?.simpleText || 'No description',
             aliases: `Views: ${videoDetails.viewCount || 'N/A'}`,
-            airdate: `Uploaded: ${microformat.publishDate || 'Unknown'}`
+            airdate: `Uploaded: ${microformat.publishDate || microformat.uploadDate || 'Unknown'}`
         }]);
     } catch (error) {
         console.log('Details error:', error);
@@ -233,7 +177,9 @@ async function extractEpisodes(url) {
             context: {
                 client: {
                     clientName: innertubeClientName,
-                    clientVersion: innertubeClientVersion
+                    clientVersion: innertubeClientVersion,
+                    hl: "ar",
+                    gl: "SA"
                 }
             }
         };
@@ -262,6 +208,10 @@ async function extractEpisodes(url) {
     }
 }
 
+// ============================================================
+// الجزء الخامس: استخراج رابط البث عبر Invidious (الخطوة الوحيدة التي تستخدم Invidious)
+// ============================================================
+
 /**
  * استخراج رابط الدفق مع الترجمات (StreamAsync + SoftSub)
  * المدخل: HTML (string) لأن streamAsyncJS: true
@@ -269,62 +219,75 @@ async function extractEpisodes(url) {
  */
 async function extractStreamUrl(html) {
     try {
-        // استخراج videoId من HTML (إذا كان متاحاً)
-        const videoIdMatch = html.match(/watch\?v=([^"&]+)/);
-        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+        // 1. استخراج videoId من HTML
+        const videoId = extractVideoIdFromHtml(html);
+        if (!videoId) {
+            // محاولة استخراج من الرابط إذا كان متاحاً في HTML
+            const urlMatch = html.match(/https?:\/\/[^\s"']+v=([^&"'\s]+)/);
+            const videoIdFromUrl = urlMatch ? urlMatch[1] : null;
+            if (!videoIdFromUrl) return JSON.stringify({ stream: null, subtitles: null });
+            // إعادة المحاولة مع المعرف المستخرج من الرابط
+            return await extractStreamUrl(`https://www.youtube.com/watch?v=${videoIdFromUrl}`);
+        }
+
+        // 2. استخدام Invidious للحصول على الروابط المفككة
+        const invidiousUrl = `${INVIDIOUS_API}videos/${videoId}`;
+        console.log(`🌐 Fetching stream from Invidious: ${invidiousUrl}`);
         
-        if (!videoId) return JSON.stringify({ stream: null, subtitles: null });
-        
-        // جلب بيانات الفيديو من InnerTube
-        const data = {
-            videoId: videoId,
-            context: {
-                client: {
-                    clientName: innertubeClientName,
-                    clientVersion: innertubeClientVersion
-                }
+        const response = await fetchv2(invidiousUrl);
+        const data = await response.json();
+
+        // 3. البحث عن أفضل رابط صوتي (نفس المنطق السابق)
+        let bestAudio = null;
+        if (data.adaptiveFormats) {
+            // نفضل أعلى جودة صوتية (itag 251 = opus عالي الجودة)
+            bestAudio = data.adaptiveFormats.find(f => f.itag === 251) ||
+                        data.adaptiveFormats.find(f => f.itag === 140) ||
+                        data.adaptiveFormats.find(f => f.itag === 250) ||
+                        data.adaptiveFormats.find(f => f.itag === 249);
+        }
+
+        // إذا لم نجد صوتاً، نبحث عن رابط فيديو مع صوت (formatStreams)
+        if (!bestAudio && data.formatStreams && data.formatStreams.length > 0) {
+            // نفضل أعلى جودة فيديو مع صوت
+            bestAudio = data.formatStreams.find(f => f.qualityLabel === '720p') ||
+                        data.formatStreams.find(f => f.qualityLabel === '480p') ||
+                        data.formatStreams[0];
+        }
+
+        // 4. استخراج الترجمات (SoftSub) من Invidious أيضاً
+        let subtitlesUrl = null;
+        if (data.captions && data.captions.length > 0) {
+            // نفضل الترجمة العربية أو الإنجليزية
+            const arabicSub = data.captions.find(c => c.language_code === 'ar');
+            const englishSub = data.captions.find(c => c.language_code === 'en');
+            const preferredSub = arabicSub || englishSub || data.captions[0];
+            if (preferredSub && preferredSub.url) {
+                // تأكد من أن الرابط كامل
+                subtitlesUrl = preferredSub.url.startsWith('http') 
+                    ? preferredSub.url 
+                    : `${INVIDIOUS_API}${preferredSub.url}`;
             }
-        };
-        
-        const response = await callInnerTube('player', data);
-        const formats = await extractFormatsWithSignature(response);
-        
-        // اختيار أفضل تنسيق (فيديو + صوت عالي الجودة)
-        const videoFormats = formats.filter(f => f.hasVideo && f.hasAudio);
-        const bestFormat = videoFormats.reduce((best, current) => {
-            const currentQuality = parseInt(current.quality) || 0;
-            const bestQuality = parseInt(best?.quality) || 0;
-            return currentQuality > bestQuality ? current : best;
-        }, videoFormats[0]);
-        
-        // استخراج الترجمات (SoftSub)
-        const captions = response.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
-        const subtitleTrack = captions.find(t => t.languageCode === 'en' || t.languageCode === 'ar');
-        const subtitlesUrl = subtitleTrack?.baseUrl || null;
-        
+        }
+
         const result = {
-            stream: bestFormat?.url || null,
+            stream: bestAudio?.url || null,
             subtitles: subtitlesUrl
         };
-        
-        console.log('✅ Stream extracted:', result);
+
+        console.log(`✅ Stream extracted via Invidious for video ${videoId}`);
         return JSON.stringify(result);
     } catch (error) {
-        console.log('Stream error:', error);
+        console.log('Stream error (Invidious):', error);
         return JSON.stringify({ stream: null, subtitles: null });
     }
 }
 
 // ============================================================
-// الجزء الخامس: دوال مساعدة للـ Normal Mode (في حال الحاجة)
-// ============================================================
-
-// يمكن إضافة دوال مماثلة تستقبل HTML مباشرة إذا تم تعطيل asyncJS
-// لكننا لن نحتاجها لأن asyncJS: true
-
-// ============================================================
-// تهيئة الإعدادات عند بدء التشغيل
+// الجزء السادس: تهيئة الإعدادات عند بدء التشغيل
 // ============================================================
 
 // تحميل إعدادات InnerTube فوراً
 fetchInnertubeConfig();
+
+console.log('✅ YouTube Module (InnerTube + Invidious Stream) initialized');
