@@ -7,7 +7,7 @@
   },
   "version": "2.0.0",
   "language": "en",
-  "streamType": "MP4",
+  "streamType": "HLS",
   "quality": "Adaptive",
   "baseUrl": "https://www.youtube.com/",
   "searchBaseUrl": "https://www.youtube.com/results?search_query=%s",
