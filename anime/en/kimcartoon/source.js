@@ -1,8 +1,8 @@
 async function searchResults(keyword) {
     const searchUrl = `https://kimcartoon.com.co/?s=${encodeURIComponent(keyword)}`;
     try {
-        const response = await fetch(searchUrl);
-        const html = await response;
+        const response = await fetchv2(searchUrl);
+        const html = await response.text();
         const results = [];
         const articleRegex = /<article[^>]*class="bs styletwo"[\s\S]*?<\/article>/g;
         const items = html.match(articleRegex) || [];
@@ -32,8 +32,8 @@ async function searchResults(keyword) {
 }
 
 async function extractDetails(url) {
-    const response = await fetch(url);
-    const html = await response;
+    const response = await fetchv2(url);
+    const html = await response.text();
     const details = [];
     const descriptionMatch = html.match(/<div class="entry-content" itemprop="description">\s*<p>(.*?)<\/p>/);
     const description = descriptionMatch ? descriptionMatch[1].trim() : `N/A`;
@@ -48,8 +48,8 @@ async function extractDetails(url) {
     return JSON.stringify(details);
 }
 async function extractEpisodes(url) {
-    const response = await fetch(url);
-    const html = await response;
+    const response = await fetchv2(url);
+    const html = await response.text();
     const episodes = [];
     
     const allMatches = [...html.matchAll(/<li[^>]*>\s*<a href="([^"]+)">\s*<div class="epl-title">([^<]*) <\/div>/g)];
@@ -80,8 +80,8 @@ async function extractEpisodes(url) {
 }
 
 async function extractStreamUrl(url) {
-    const embedResponse = await fetch(url);
-    const data = await embedResponse;
+    const embedResponse = await fetchv2(url);
+    const data = await embedResponse.text();
     
     const embedMatch = data.match(/<div class="pembed" data-embed="(.*?)"/);
     if (embedMatch && embedMatch[1]) {
@@ -97,17 +97,29 @@ async function extractStreamUrl(url) {
         }
         
         console.log(fullEmbedUrl);
-        const embedPageResponse = await fetch(fullEmbedUrl);
-        const embedPageData = await embedPageResponse;
-        
+        const embedPageResponse = await fetchv2(fullEmbedUrl);
+        const embedPageData = await embedPageResponse.text();
+
         console.log(embedPageData);
-        const m3u8Match = embedPageData.match(/sources:\s*\[\{file:"(https:\/\/[^"]*\.m3u8)"/);
-        if (m3u8Match && m3u8Match[1]) {
-            const m3u8Url = m3u8Match[1];
-            console.log(m3u8Url);
-            return m3u8Url;
+        
+        const iframeMatch = embedPageData.match(/<iframe[^>]*src="([^"]+)"/);
+        if (iframeMatch && iframeMatch[1]) {
+            const iframeUrl = iframeMatch[1];
+            console.log("Iframe URL:", iframeUrl);
+            
+            const iframeResponse = await fetchv2(iframeUrl);
+            const iframeData = await iframeResponse.text();
+            
+            const m3u8Match = iframeData.match(/sources:\s*\[\{"file":"(https:\/\/[^"]*\.m3u8)"/);
+            if (m3u8Match && m3u8Match[1]) {
+                const m3u8Url = m3u8Match[1];
+                console.log(m3u8Url);
+                return m3u8Url;
+            } else {
+                throw new Error("M3U8 URL not found in iframe content.");
+            }
         } else {
-            throw new Error("M3U8 URL not found.");
+            throw new Error("Iframe URL not found in embedPageData.");
         }
     } else {
         throw new Error("Embed URL not found.");
