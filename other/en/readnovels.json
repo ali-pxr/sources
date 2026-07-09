@@ -1,0 +1,22 @@
+{
+  "sourceName": "ReadNovels",
+  "iconUrl": "https://readnovel.eu/apple-touch-icon.png",
+  "author": {
+    "name": "50/50",
+    "icon": "https://files.catbox.moe/741wp7.png"
+  },
+  "version": "1.0.1",
+  "language": "English",
+  "streamType": "novels",
+  "quality": "N/A",
+  "baseUrl": "https://readnovel.eu/",
+  "searchBaseUrl": "https://readnovel.eu/search/%s",
+  "scriptUrl": "https://git.luna-app.eu/50n50/sources/raw/branch/main/readnovels/readnovels.js",
+  "type": "novels",
+  "asyncJS": true,
+  "novel": true,
+  "downloadSupport": false,
+  "supportsSora": true,
+  "supportsTsumi": true,
+  "supportsHiyoku": true
+}
